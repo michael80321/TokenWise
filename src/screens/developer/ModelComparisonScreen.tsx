@@ -1,21 +1,22 @@
-import React, { useMemo, useState, useCallback } from 'react';
+import React, { useMemo, useState, useCallback, useEffect } from 'react';
 import {
   View,
   StyleSheet,
   FlatList,
   TouchableOpacity,
   StatusBar,
-  ScrollView,
+  ActivityIndicator,
+  RefreshControl,
 } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Colors, Spacing, Typography, Radius, Shadows } from '../../theme';
+import { Colors, Spacing, Typography, Radius } from '../../theme';
 import { Text } from '../../components/Text';
 import { Card } from '../../components/Card';
 import { Badge, BoolBadge } from '../../components/Badge';
 import { SortPicker } from '../../components/SortPicker';
 import { ProviderChip } from '../../components/ProviderLogo';
-import { ModelPricing, SortKey } from '../../data/types';
-import pricingData from '../../data/pricing.json';
+import { ModelPricing, PricingData, SortKey } from '../../data/types';
+import { fetchPricing } from '../../api/pricing';
 
 function formatContext(tokens: number): string {
   if (tokens >= 1_000_000) return `${tokens / 1_000_000}M`;
@@ -153,10 +154,27 @@ function FeatureRow({ label, supported }: { label: string; supported: boolean })
 
 export function ModelComparisonScreen() {
   const [sortKey, setSortKey] = useState<SortKey>('quality');
+  const [pricingData, setPricingData] = useState<PricingData | null>(null);
+  const [loading, setLoading] = useState(true);
+  const [refreshing, setRefreshing] = useState(false);
+
+  const loadData = useCallback(async (isRefresh = false) => {
+    if (isRefresh) setRefreshing(true);
+    else setLoading(true);
+    try {
+      const data = await fetchPricing();
+      setPricingData(data);
+    } finally {
+      setLoading(false);
+      setRefreshing(false);
+    }
+  }, []);
+
+  useEffect(() => { loadData(); }, [loadData]);
 
   const sorted = useMemo(
-    () => sortModels(pricingData.models as ModelPricing[], sortKey),
-    [sortKey]
+    () => pricingData ? sortModels(pricingData.models, sortKey) : [],
+    [pricingData, sortKey]
   );
 
   const renderItem = useCallback(
@@ -175,10 +193,12 @@ export function ModelComparisonScreen() {
         <Text variant="body" color={Colors.textSecondary} style={styles.headerSub}>
           以你的場景，我告訴你該用哪個
         </Text>
-        <Text variant="caption" color={Colors.textMuted}>
-          價格資料更新：{pricingData.last_updated} ·{' '}
-          <Text variant="caption" color={Colors.expensiveOrange}>上線前請以官方頁面確認</Text>
-        </Text>
+        {pricingData && (
+          <Text variant="caption" color={Colors.textMuted}>
+            價格資料更新：{String(pricingData.last_updated).slice(0, 10)} ·{' '}
+            <Text variant="caption" color={Colors.expensiveOrange}>上線前請以官方頁面確認</Text>
+          </Text>
+        )}
       </View>
 
       <View style={styles.sortRow}>
@@ -186,14 +206,30 @@ export function ModelComparisonScreen() {
         <SortPicker value={sortKey} onChange={setSortKey} />
       </View>
 
-      <FlatList
-        data={sorted}
-        keyExtractor={(item) => item.id}
-        renderItem={renderItem}
-        contentContainerStyle={styles.list}
-        showsVerticalScrollIndicator={false}
-        ItemSeparatorComponent={() => <View style={styles.separator} />}
-      />
+      {loading ? (
+        <View style={styles.loadingContainer}>
+          <ActivityIndicator color={Colors.brand} size="large" />
+          <Text variant="caption" color={Colors.textMuted} style={{ marginTop: Spacing.md }}>
+            載入價格資料中…
+          </Text>
+        </View>
+      ) : (
+        <FlatList
+          data={sorted}
+          keyExtractor={(item) => item.id}
+          renderItem={renderItem}
+          contentContainerStyle={styles.list}
+          showsVerticalScrollIndicator={false}
+          ItemSeparatorComponent={() => <View style={styles.separator} />}
+          refreshControl={
+            <RefreshControl
+              refreshing={refreshing}
+              onRefresh={() => loadData(true)}
+              tintColor={Colors.brand}
+            />
+          }
+        />
+      )}
     </SafeAreaView>
   );
 }
@@ -202,6 +238,11 @@ const styles = StyleSheet.create({
   safe: {
     flex: 1,
     backgroundColor: Colors.background,
+  },
+  loadingContainer: {
+    flex: 1,
+    alignItems: 'center',
+    justifyContent: 'center',
   },
   header: {
     paddingHorizontal: Spacing.xl,
