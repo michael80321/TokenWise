@@ -5,6 +5,7 @@ import { Colors, Typography, Spacing } from '../theme';
 import { Text } from '../components/Text';
 import { DeveloperTabs } from './DeveloperTabs';
 import { DailyScreen } from '../screens/daily';
+import { SettingsScreen } from '../screens/settings/SettingsScreen';
 
 const Tab = createBottomTabNavigator();
 
@@ -54,6 +55,15 @@ export function TabNavigator() {
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} label="開發者" emoji="⚙" />
+          ),
+        }}
+      />
+      <Tab.Screen
+        name="Settings"
+        component={SettingsScreen}
+        options={{
+          tabBarIcon: ({ focused }) => (
+            <TabIcon focused={focused} label="設定" emoji="☰" />
           ),
         }}
       />

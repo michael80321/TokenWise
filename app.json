@@ -12,7 +12,10 @@
     },
     "ios": {
       "supportsTablet": true,
-      "bundleIdentifier": "com.tokenwise.app"
+      "bundleIdentifier": "com.tokenwise.app",
+      "infoPlist": {
+        "NSUserNotificationsUsageDescription": "開啟通知以在 AI 模型價格異動時立即收到推播。"
+      }
     },
     "android": {
       "package": "com.tokenwise.app",

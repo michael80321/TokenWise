@@ -6,6 +6,7 @@ import { Colors, Typography, Spacing } from '../theme';
 import { ModelComparisonScreen } from '../screens/developer/ModelComparisonScreen';
 import { TokenCalculatorScreen } from '../screens/developer/TokenCalculatorScreen';
 import { ScenarioScreen } from '../screens/developer/ScenarioScreen';
+import { AlternativeScreen } from '../screens/developer/AlternativeScreen';
 
 const Tab = createMaterialTopTabNavigator();
 
@@ -26,6 +27,7 @@ export function DeveloperTabs() {
         <Tab.Screen name="模型比較" component={ModelComparisonScreen} />
         <Tab.Screen name="成本計算" component={TokenCalculatorScreen} />
         <Tab.Screen name="場景選型" component={ScenarioScreen} />
+        <Tab.Screen name="替代建議" component={AlternativeScreen} />
       </Tab.Navigator>
     </SafeAreaView>
   );

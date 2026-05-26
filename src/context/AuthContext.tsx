@@ -1,6 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
 import * as SecureStore from 'expo-secure-store';
 import { fetchMe, MeResponse } from '../api/auth';
+import { registerForPushNotifications } from '../api/notifications';
 
 const TOKEN_KEY = 'tokenwise_jwt';
 
@@ -42,6 +43,8 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
     await SecureStore.setItemAsync(TOKEN_KEY, token);
     const user = await fetchMe(token);
     setState({ token, user, loading: false });
+    // Best-effort push registration — don't block sign-in if it fails
+    registerForPushNotifications(token).catch(console.warn);
   }, []);
 
   const signOut = useCallback(async () => {

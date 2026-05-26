@@ -6,6 +6,7 @@ import { publicLimiter } from './middleware/rateLimit';
 import pricingRouter from './routes/pricing';
 import healthRouter from './routes/health';
 import authRouter from './routes/auth';
+import notificationsRouter from './routes/notifications';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -31,6 +32,8 @@ app.use(publicLimiter);
 app.use('/health', healthRouter);
 app.use('/api/pricing', pricingRouter);
 app.use('/auth', authRouter);
+app.use('/api/notifications', notificationsRouter);
+app.use('/api/cron', notificationsRouter);
 
 // 404 handler
 app.use((_req, res) => {

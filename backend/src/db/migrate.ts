@@ -64,6 +64,17 @@ const migrations = [
   `CREATE INDEX IF NOT EXISTS idx_models_snapshot ON models(snapshot_id);`,
   `CREATE INDEX IF NOT EXISTS idx_snapshots_live ON pricing_snapshots(is_live) WHERE is_live = TRUE;`,
   `
+  CREATE TABLE IF NOT EXISTS push_tokens (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    token TEXT UNIQUE NOT NULL,
+    platform TEXT NOT NULL DEFAULT 'unknown',
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+  `,
+  `CREATE INDEX IF NOT EXISTS idx_push_tokens_user ON push_tokens(user_id);`,
+  `
   CREATE TABLE IF NOT EXISTS daily_llm_usage (
     date DATE PRIMARY KEY DEFAULT CURRENT_DATE,
     usd_spent NUMERIC(10, 6) NOT NULL DEFAULT 0,
