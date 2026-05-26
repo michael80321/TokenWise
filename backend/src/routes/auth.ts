@@ -47,11 +47,14 @@ router.post('/request-otp', async (req: Request, res: Response) => {
     );
 
     if (IS_DEV) {
-      // In dev: log OTP to console, skip email
+      // In dev: log OTP to console, skip email, return code in response for easy testing
       console.log(`[DEV] OTP for ${normalizedEmail}: ${code}`);
+      return res.json({ ok: true, message: '[DEV] 驗證碼已產生', dev_otp: code });
     } else {
       await resend.emails.send({
-        from: 'TokenWise <noreply@tokenwise.app>',
+        // Use Resend's shared sandbox sender — works without domain verification.
+        // Switch to noreply@tokenwise.app after verifying your domain in Resend.
+        from: 'TokenWise <onboarding@resend.dev>',
         to: normalizedEmail,
         subject: `TokenWise 登入驗證碼：${code}`,
         html: `
