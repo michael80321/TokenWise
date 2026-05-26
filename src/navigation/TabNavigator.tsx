@@ -3,7 +3,7 @@ import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
 import { View, StyleSheet, Platform } from 'react-native';
 import { Colors, Typography, Spacing } from '../theme';
 import { Text } from '../components/Text';
-import { ModelComparisonScreen } from '../screens/developer';
+import { DeveloperTabs } from './DeveloperTabs';
 import { DailyScreen } from '../screens/daily';
 
 const Tab = createBottomTabNavigator();
@@ -50,7 +50,7 @@ export function TabNavigator() {
       />
       <Tab.Screen
         name="Developer"
-        component={ModelComparisonScreen}
+        component={DeveloperTabs}
         options={{
           tabBarIcon: ({ focused }) => (
             <TabIcon focused={focused} label="開發者" emoji="⚙" />
