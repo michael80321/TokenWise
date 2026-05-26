@@ -2,6 +2,37 @@ import pool from './pool';
 
 const migrations = [
   `
+  CREATE TABLE IF NOT EXISTS users (
+    id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+    email TEXT UNIQUE NOT NULL,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    last_login_at TIMESTAMPTZ
+  );
+  `,
+  `
+  CREATE TABLE IF NOT EXISTS auth_otps (
+    id SERIAL PRIMARY KEY,
+    user_id UUID NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    code TEXT NOT NULL,
+    expires_at TIMESTAMPTZ NOT NULL,
+    used BOOLEAN NOT NULL DEFAULT FALSE,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+  `,
+  `CREATE INDEX IF NOT EXISTS idx_otps_user ON auth_otps(user_id);`,
+  `
+  CREATE TABLE IF NOT EXISTS subscriptions (
+    id SERIAL PRIMARY KEY,
+    user_id UUID UNIQUE NOT NULL REFERENCES users(id) ON DELETE CASCADE,
+    tier TEXT NOT NULL DEFAULT 'free',
+    rc_customer_id TEXT,
+    rc_entitlement TEXT,
+    valid_until TIMESTAMPTZ,
+    created_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),
+    updated_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  );
+  `,
+  `
   CREATE TABLE IF NOT EXISTS pricing_snapshots (
     id SERIAL PRIMARY KEY,
     published_at TIMESTAMPTZ NOT NULL DEFAULT NOW(),

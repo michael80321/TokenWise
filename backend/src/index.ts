@@ -5,6 +5,7 @@ import cors from 'cors';
 import { publicLimiter } from './middleware/rateLimit';
 import pricingRouter from './routes/pricing';
 import healthRouter from './routes/health';
+import authRouter from './routes/auth';
 
 const app = express();
 const PORT = process.env.PORT ?? 3000;
@@ -29,6 +30,7 @@ app.use(publicLimiter);
 // Routes
 app.use('/health', healthRouter);
 app.use('/api/pricing', pricingRouter);
+app.use('/auth', authRouter);
 
 // 404 handler
 app.use((_req, res) => {
