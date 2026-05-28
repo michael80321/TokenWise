@@ -1,9 +1,26 @@
 import React, { createContext, useContext, useEffect, useState, useCallback } from 'react';
+import { Platform } from 'react-native';
 import * as SecureStore from 'expo-secure-store';
 import { fetchMe, MeResponse } from '../api/auth';
 import { registerForPushNotifications } from '../api/notifications';
 
 const TOKEN_KEY = 'tokenwise_jwt';
+
+// expo-secure-store doesn't work on web — fall back to localStorage
+const storage = {
+  async get(key: string): Promise<string | null> {
+    if (Platform.OS === 'web') return localStorage.getItem(key);
+    return SecureStore.getItemAsync(key);
+  },
+  async set(key: string, value: string): Promise<void> {
+    if (Platform.OS === 'web') { localStorage.setItem(key, value); return; }
+    return SecureStore.setItemAsync(key, value);
+  },
+  async del(key: string): Promise<void> {
+    if (Platform.OS === 'web') { localStorage.removeItem(key); return; }
+    return SecureStore.deleteItemAsync(key);
+  },
+};
 
 interface AuthState {
   token: string | null;
@@ -24,7 +41,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
 
   const loadStoredToken = useCallback(async () => {
     try {
-      const stored = await SecureStore.getItemAsync(TOKEN_KEY);
+      const stored = await storage.get(TOKEN_KEY);
       if (!stored) {
         setState({ token: null, user: null, loading: false });
         return;
@@ -32,7 +49,7 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
       const user = await fetchMe(stored);
       setState({ token: stored, user, loading: false });
     } catch {
-      await SecureStore.deleteItemAsync(TOKEN_KEY);
+      await storage.del(TOKEN_KEY);
       setState({ token: null, user: null, loading: false });
     }
   }, []);
@@ -40,15 +57,14 @@ export function AuthProvider({ children }: { children: React.ReactNode }) {
   useEffect(() => { loadStoredToken(); }, [loadStoredToken]);
 
   const signIn = useCallback(async (token: string) => {
-    await SecureStore.setItemAsync(TOKEN_KEY, token);
+    await storage.set(TOKEN_KEY, token);
     const user = await fetchMe(token);
     setState({ token, user, loading: false });
-    // Best-effort push registration — don't block sign-in if it fails
     registerForPushNotifications(token).catch(console.warn);
   }, []);
 
   const signOut = useCallback(async () => {
-    await SecureStore.deleteItemAsync(TOKEN_KEY);
+    await storage.del(TOKEN_KEY);
     setState({ token: null, user: null, loading: false });
   }, []);
 
