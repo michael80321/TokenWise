@@ -184,7 +184,7 @@ router.post('/webhook/revenuecat', async (req: Request, res: Response) => {
       `UPDATE subscriptions
        SET tier = $1, valid_until = $2, rc_customer_id = $3,
            rc_entitlement = $4, updated_at = NOW()
-       WHERE user_id = (SELECT id FROM users WHERE email = $3)`,
+       WHERE user_id = (SELECT id FROM users WHERE rc_customer_id = $3)`,
       [tier, validUntil, app_user_id, entitlement_ids?.[0] ?? null]
     );
 

@@ -6,6 +6,7 @@ import {
   TouchableOpacity,
   StatusBar,
 } from 'react-native';
+import AsyncStorage from '@react-native-async-storage/async-storage';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useFocusEffect } from '@react-navigation/native';
 import { Colors, Spacing, Typography, Radius } from '../../theme';
@@ -62,9 +63,9 @@ export function AlternativeScreen() {
   useFocusEffect(
     useCallback(() => {
       fetchPricing().then((d) => setModels(d.models));
-      const key = getThisMonthKey();
-      const stored = parseInt(global.localStorage?.getItem?.(key) ?? '0') || 0;
-      setUsesThisMonth(stored);
+      AsyncStorage.getItem(getThisMonthKey()).then((val: string | null) => {
+        setUsesThisMonth(parseInt(val ?? '0') || 0);
+      });
     }, [])
   );
 
@@ -82,7 +83,7 @@ export function AlternativeScreen() {
     if (!isPro) {
       const next = usesThisMonth + 1;
       setUsesThisMonth(next);
-      global.localStorage?.setItem?.(getThisMonthKey(), String(next));
+      AsyncStorage.setItem(getThisMonthKey(), String(next));
     }
   }
 

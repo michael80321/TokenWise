@@ -22,7 +22,7 @@ app.use(cors({
     // Add your production domain here when known, e.g.:
     // 'https://tokenwise.app',
   ],
-  methods: ['GET'],
+  methods: ['GET', 'POST', 'DELETE'],
 }));
 
 app.use(express.json({ limit: '16kb' }));
